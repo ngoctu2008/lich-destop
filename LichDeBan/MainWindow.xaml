@@ -11,14 +11,18 @@
         AllowsTransparency="True"
         Background="Transparent"
         ShowInTaskbar="False"
+        Icon="pack://application:,,,/Resources/icon.png"
         Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
 
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
 
     <Border x:Name="MainBorder"
-            Background="#33FFFFFF"
             BorderBrush="Transparent"
             BorderThickness="2"
             CornerRadius="8"
@@ -96,19 +100,38 @@
                                 <Grid Grid.Row="0">
                                     <!-- Ngày Dương -->
                                     <TextBlock Text="{Binding SolarDay}"
-                                               FontSize="18" FontWeight="Bold" Foreground="White"
-                                               HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                                               FontSize="18" FontWeight="Bold"
+                                               HorizontalAlignment="Left" VerticalAlignment="Top">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSaturday}" Value="True">
+                                                        <Setter Property="Foreground" Value="#FFCC00"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsSunday}" Value="True">
+                                                        <Setter Property="Foreground" Value="#FF3333"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                     <!-- Ngày Âm -->
                                     <TextBlock Text="{Binding LunarDayText}"
                                                FontSize="11" Foreground="#FFAA00"
                                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,0,0"/>
                                 </Grid>
 
-                                <!-- Khu vực Ghi chú -->
-                                <TextBlock Grid.Row="1" Text="{Binding Notes}"
-                                           Foreground="#DDFFFFFF" FontSize="12"
-                                           TextWrapping="Wrap" Margin="0,5,0,0"
-                                           VerticalAlignment="Top" MaxHeight="40"/>
+                                <!-- Khu vực Ghi chú và Lễ -->
+                                <StackPanel Grid.Row="1" Margin="0,5,0,0" VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding HolidayText}"
+                                               Foreground="#FF3333" FontSize="11" FontWeight="Bold"
+                                               TextWrapping="Wrap" Visibility="{Binding HasHoliday, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                               Margin="0,0,0,2"/>
+                                    <TextBlock Text="{Binding Notes}"
+                                               Foreground="#DDFFFFFF" FontSize="12"
+                                               TextWrapping="Wrap" MaxHeight="40"/>
+                                </StackPanel>
                             </Grid>
                         </Border>
                     </DataTemplate>

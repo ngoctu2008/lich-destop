@@ -34,6 +34,15 @@ namespace LichDeBan.Models
             set { _notes = value; OnPropertyChanged(); }
         }
 
+        private string _holidayText = string.Empty;
+        public string HolidayText
+        {
+            get => _holidayText;
+            set { _holidayText = value; OnPropertyChanged(); }
+        }
+
+        public bool HasHoliday => !string.IsNullOrEmpty(HolidayText);
+
         private bool _isToday;
         public bool IsToday
         {
@@ -47,6 +56,9 @@ namespace LichDeBan.Models
             get => _isCurrentMonth;
             set { _isCurrentMonth = value; OnPropertyChanged(); }
         }
+
+        public bool IsSaturday => Date.DayOfWeek == DayOfWeek.Saturday;
+        public bool IsSunday => Date.DayOfWeek == DayOfWeek.Sunday;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

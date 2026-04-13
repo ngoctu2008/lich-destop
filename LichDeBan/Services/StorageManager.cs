@@ -10,8 +10,21 @@ namespace LichDeBan.Services
         private static readonly string AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LichDeBan");
         private static readonly string DataFilePath = Path.Combine(AppDataFolder, "notes.json");
 
-        // Dictionary chứa ghi chú: Key là chuỗi ngày "yyyy-MM-dd", Value là nội dung ghi chú
+        // Dictionary chứa ghi chú đơn lẻ: Key là chuỗi ngày "yyyy-MM-dd", Value là nội dung ghi chú
         private static Dictionary<string, string> _notesCache = new Dictionary<string, string>();
+
+        // Ghi chú lặp Dương Lịch: Key là "MM-dd"
+        private static Dictionary<string, string> _solarRepeatNotes = new Dictionary<string, string>();
+
+        // Ghi chú lặp Âm Lịch: Key là "MM-dd"
+        private static Dictionary<string, string> _lunarRepeatNotes = new Dictionary<string, string>();
+
+        public class StorageData
+        {
+            public Dictionary<string, string> Notes { get; set; } = new Dictionary<string, string>();
+            public Dictionary<string, string> SolarRepeat { get; set; } = new Dictionary<string, string>();
+            public Dictionary<string, string> LunarRepeat { get; set; } = new Dictionary<string, string>();
+        }
 
         static StorageManager()
         {
@@ -29,15 +42,26 @@ namespace LichDeBan.Services
                 try
                 {
                     string json = File.ReadAllText(DataFilePath);
-                    var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-                    if (data != null)
+
+                    // Thử parse format mới có lặp lại
+                    var data = JsonSerializer.Deserialize<StorageData>(json);
+                    if (data != null && (data.Notes.Count > 0 || data.SolarRepeat.Count > 0 || data.LunarRepeat.Count > 0))
                     {
-                        _notesCache = data;
+                        _notesCache = data.Notes;
+                        _solarRepeatNotes = data.SolarRepeat;
+                        _lunarRepeatNotes = data.LunarRepeat;
+                        return;
+                    }
+
+                    // Parse fallback format cũ (chỉ có Dictionary)
+                    var oldData = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                    if (oldData != null)
+                    {
+                        _notesCache = oldData;
                     }
                 }
                 catch (Exception)
                 {
-                    // Lỗi đọc/parse file, bỏ qua và dùng cache trống
                     _notesCache = new Dictionary<string, string>();
                 }
             }
@@ -47,7 +71,13 @@ namespace LichDeBan.Services
         {
             try
             {
-                string json = JsonSerializer.Serialize(_notesCache, new JsonSerializerOptions { WriteIndented = true });
+                var data = new StorageData
+                {
+                    Notes = _notesCache,
+                    SolarRepeat = _solarRepeatNotes,
+                    LunarRepeat = _lunarRepeatNotes
+                };
+                string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(DataFilePath, json);
             }
             catch (Exception)
@@ -56,32 +86,59 @@ namespace LichDeBan.Services
             }
         }
 
-        public static string GetNoteForDate(DateTime date)
+        public static string GetNoteForDate(DateTime date, Helpers.LunarInfo lunarInfo)
         {
-            string key = date.ToString("yyyy-MM-dd");
-            if (_notesCache.TryGetValue(key, out string? note))
+            string result = "";
+            string fullKey = date.ToString("yyyy-MM-dd");
+            string solarKey = date.ToString("MM-dd");
+            string lunarKey = $"{lunarInfo.Month:D2}-{lunarInfo.Day:D2}";
+
+            if (_solarRepeatNotes.TryGetValue(solarKey, out string? sNote))
             {
-                return note;
+                result += sNote;
             }
-            return string.Empty;
+
+            if (_lunarRepeatNotes.TryGetValue(lunarKey, out string? lNote))
+            {
+                if (result.Length > 0) result += "\n";
+                result += lNote;
+            }
+
+            if (_notesCache.TryGetValue(fullKey, out string? note))
+            {
+                if (result.Length > 0) result += "\n";
+                result += note;
+            }
+
+            return result;
         }
 
-        public static void SetNoteForDate(DateTime date, string note)
+        public static string GetRawNoteForDate(DateTime date)
         {
             string key = date.ToString("yyyy-MM-dd");
+            return _notesCache.TryGetValue(key, out string? note) ? note : "";
+        }
+
+        public static void SetNoteForDate(DateTime date, string note, int repeatType, Helpers.LunarInfo lunarInfo)
+        {
+            string fullKey = date.ToString("yyyy-MM-dd");
+            string solarKey = date.ToString("MM-dd");
+            string lunarKey = $"{lunarInfo.Month:D2}-{lunarInfo.Day:D2}";
+
+            // Xóa ghi chú cũ nếu tồn tại trong loại lặp này
             if (string.IsNullOrWhiteSpace(note))
             {
-                if (_notesCache.ContainsKey(key))
-                {
-                    _notesCache.Remove(key);
-                    SaveNotes();
-                }
+                if (repeatType == 0) _notesCache.Remove(fullKey);
+                else if (repeatType == 1) _solarRepeatNotes.Remove(solarKey);
+                else if (repeatType == 2) _lunarRepeatNotes.Remove(lunarKey);
             }
             else
             {
-                _notesCache[key] = note.Trim();
-                SaveNotes();
+                if (repeatType == 0) _notesCache[fullKey] = note.Trim();
+                else if (repeatType == 1) _solarRepeatNotes[solarKey] = note.Trim();
+                else if (repeatType == 2) _lunarRepeatNotes[lunarKey] = note.Trim();
             }
+            SaveNotes();
         }
     }
 }

@@ -37,6 +37,33 @@ namespace LichDeBan
 
             // Đăng ký sự kiện nhấp đúp chuột từ MouseHook
             MouseHook.OnMouseDoubleClick += MouseHook_OnMouseDoubleClick;
+
+            // Đăng ký nhận sự thay đổi từ Settings
+            Services.SettingsManager.CurrentSettings.PropertyChanged += CurrentSettings_PropertyChanged;
+            ApplySettings();
+        }
+
+        private void CurrentSettings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            ApplySettings();
+        }
+
+        private void ApplySettings()
+        {
+            var settings = Services.SettingsManager.CurrentSettings;
+            this.Opacity = settings.Opacity;
+
+            if (_isLocked) // Chỉ áp dụng Background khi bị khóa (để trong suốt). Khi unlock sẽ có màu báo hiệu
+            {
+                try
+                {
+                    MainBorder.Background = new System.Windows.Media.BrushConverter().ConvertFromString(settings.BackgroundColor) as System.Windows.Media.Brush;
+                }
+                catch
+                {
+                    MainBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(51, 255, 255, 255));
+                }
+            }
         }
 
         private void MouseHook_OnMouseDoubleClick(object? sender, System.Windows.Point p)
@@ -84,7 +111,10 @@ namespace LichDeBan
                 if (win is NoteEditorWindow) return;
             }
 
-            var editor = new NoteEditorWindow(cellModel.Date, cellModel.Notes);
+            // Lấy lại raw note để hiện lên edit box
+            string rawNote = Services.StorageManager.GetRawNoteForDate(cellModel.Date);
+
+            var editor = new NoteEditorWindow(cellModel.Date, rawNote);
 
             // Đặt vị trí cửa sổ editor gần con trỏ chuột
             editor.Left = screenPoint.X;
@@ -95,8 +125,13 @@ namespace LichDeBan
             if (editor.IsSaved)
             {
                 string newNote = editor.NoteContent;
-                cellModel.Notes = newNote;
-                Services.StorageManager.SetNoteForDate(cellModel.Date, newNote);
+                int repeatType = editor.RepeatType;
+
+                Helpers.LunarInfo lunarInfo = Helpers.LunarCalendarHelper.GetLunarInfo(cellModel.Date);
+                Services.StorageManager.SetNoteForDate(cellModel.Date, newNote, repeatType, lunarInfo);
+
+                // Cập nhật lại UI text note tổng hợp
+                cellModel.Notes = Services.StorageManager.GetNoteForDate(cellModel.Date, lunarInfo);
             }
         }
 
@@ -116,9 +151,9 @@ namespace LichDeBan
                 // Gắn vào Desktop (WorkerW)
                 DesktopHelper.PinToDesktop(_windowHandle);
 
-                // Loại bỏ viền và làm trong suốt hoàn toàn
+                // Loại bỏ viền và khôi phục màu cấu hình
                 MainBorder.BorderBrush = System.Windows.Media.Brushes.Transparent;
-                MainBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(51, 255, 255, 255)); // 20% White
+                ApplySettings();
 
                 // Vô hiệu hóa khả năng thay đổi kích thước và kéo
                 this.ResizeMode = ResizeMode.NoResize;

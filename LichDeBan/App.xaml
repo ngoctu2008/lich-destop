@@ -7,11 +7,13 @@
     <Application.Resources>
         <!-- Khai báo Tray Icon -->
         <tb:TaskbarIcon x:Key="MyNotifyIcon"
+                        IconSource="pack://application:,,,/Resources/icon.ico"
                         ToolTipText="Lịch Để Bàn"
                         MenuActivation="RightClick">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Khóa/Mở khóa vị trí" Click="ToggleLock_Click" />
+                    <MenuItem Header="Cài đặt" Click="Settings_Click" />
                     <Separator />
                     <MenuItem Header="Thoát" Click="Exit_Click" />
                 </ContextMenu>

@@ -6,6 +6,7 @@ namespace LichDeBan
     public partial class NoteEditorWindow : Window
     {
         public string NoteContent { get; private set; } = string.Empty;
+        public int RepeatType { get; private set; } = 0;
         public bool IsSaved { get; private set; } = false;
 
         public NoteEditorWindow(DateTime date, string currentNote)
@@ -20,6 +21,7 @@ namespace LichDeBan
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             NoteContent = NoteTextBox.Text;
+            RepeatType = RepeatCombo.SelectedIndex;
             IsSaved = true;
             this.Close();
         }

@@ -43,6 +43,22 @@ namespace LichDeBan
             }
         }
 
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            // Kiểm tra xem đã mở chưa
+            foreach (Window win in System.Windows.Application.Current.Windows)
+            {
+                if (win is SettingsWindow)
+                {
+                    win.Activate();
+                    return;
+                }
+            }
+
+            var settingsWindow = new SettingsWindow();
+            settingsWindow.Show();
+        }
+
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();

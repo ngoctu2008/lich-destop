@@ -53,12 +53,15 @@ namespace LichDeBan.ViewModels
                 // Lấy thông tin âm lịch
                 LunarInfo lunarInfo = LunarCalendarHelper.GetLunarInfo(date);
 
+                string holiday = HolidayHelper.GetHoliday(date.Day, date.Month, lunarInfo.Day, lunarInfo.Month);
+
                 Days.Add(new DayCellModel
                 {
                     Date = date,
                     SolarDay = date.Day,
                     LunarDayText = lunarInfo.ToString(),
-                    Notes = Services.StorageManager.GetNoteForDate(date),
+                    HolidayText = holiday,
+                    Notes = Services.StorageManager.GetNoteForDate(date, lunarInfo),
                     IsToday = date.Date == DateTime.Today,
                     IsCurrentMonth = date.Month == CurrentMonth.Month
                 });
