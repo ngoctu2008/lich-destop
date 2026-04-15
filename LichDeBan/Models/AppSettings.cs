@@ -19,6 +19,13 @@ namespace LichDeBan.Models
             set { _opacity = value; OnPropertyChanged(); }
         }
 
+        private bool _runAtStartup = false;
+        public bool RunAtStartup
+        {
+            get => _runAtStartup;
+            set { _runAtStartup = value; OnPropertyChanged(); }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {

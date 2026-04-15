@@ -9,11 +9,12 @@ namespace LichDeBan
         public int RepeatType { get; private set; } = 0;
         public bool IsSaved { get; private set; } = false;
 
-        public NoteEditorWindow(DateTime date, string currentNote)
+        public NoteEditorWindow(DateTime date, string currentNote, int currentRepeatType)
         {
             InitializeComponent();
             DateText.Text = $"Ghi chú cho ngày: {date:dd/MM/yyyy}";
             NoteTextBox.Text = currentNote;
+            RepeatCombo.SelectedIndex = currentRepeatType;
             NoteTextBox.Focus();
             NoteTextBox.CaretIndex = NoteTextBox.Text.Length;
         }

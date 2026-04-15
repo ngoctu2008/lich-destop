@@ -18,8 +18,8 @@ namespace LichDeBan
             // Khởi tạo Tray Icon từ Resources
             _notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
 
-            // Icon mặc định (có thể dùng icon riêng nếu có)
-            _notifyIcon.Icon = SystemIcons.Application;
+            // Icon đã được set qua XAML (IconSource="pack://application:,,,/Resources/icon.ico")
+            // nên bỏ dòng _notifyIcon.Icon = SystemIcons.Application;
 
             // Mở cửa sổ chính
             MainWindow mainWindow = new MainWindow();

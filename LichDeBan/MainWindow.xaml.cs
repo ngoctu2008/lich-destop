@@ -112,9 +112,10 @@ namespace LichDeBan
             }
 
             // Lấy lại raw note để hiện lên edit box
-            string rawNote = Services.StorageManager.GetRawNoteForDate(cellModel.Date);
+            Helpers.LunarInfo currentLunarInfo = Helpers.LunarCalendarHelper.GetLunarInfo(cellModel.Date);
+            var (rawNote, repeatType) = Services.StorageManager.GetRawNoteForDate(cellModel.Date, currentLunarInfo);
 
-            var editor = new NoteEditorWindow(cellModel.Date, rawNote);
+            var editor = new NoteEditorWindow(cellModel.Date, rawNote, repeatType);
 
             // Đặt vị trí cửa sổ editor gần con trỏ chuột
             editor.Left = screenPoint.X;
@@ -125,10 +126,10 @@ namespace LichDeBan
             if (editor.IsSaved)
             {
                 string newNote = editor.NoteContent;
-                int repeatType = editor.RepeatType;
+                int newRepeatType = editor.RepeatType;
 
                 Helpers.LunarInfo lunarInfo = Helpers.LunarCalendarHelper.GetLunarInfo(cellModel.Date);
-                Services.StorageManager.SetNoteForDate(cellModel.Date, newNote, repeatType, lunarInfo);
+                Services.StorageManager.SetNoteForDate(cellModel.Date, newNote, newRepeatType, lunarInfo);
 
                 // Cập nhật lại UI text note tổng hợp
                 cellModel.Notes = Services.StorageManager.GetNoteForDate(cellModel.Date, lunarInfo);

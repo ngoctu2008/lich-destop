@@ -113,10 +113,29 @@ namespace LichDeBan.Services
             return result;
         }
 
-        public static string GetRawNoteForDate(DateTime date)
+        public static (string content, int repeatType) GetRawNoteForDate(DateTime date, Helpers.LunarInfo lunarInfo)
         {
-            string key = date.ToString("yyyy-MM-dd");
-            return _notesCache.TryGetValue(key, out string? note) ? note : "";
+            string fullKey = date.ToString("yyyy-MM-dd");
+            string solarKey = date.ToString("MM-dd");
+            string lunarKey = $"{lunarInfo.Month:D2}-{lunarInfo.Day:D2}";
+
+            // Ưu tiên hiển thị note thường nếu có
+            if (_notesCache.TryGetValue(fullKey, out string? note))
+            {
+                return (note, 0);
+            }
+            // Nếu không có, tìm note lặp Dương Lịch
+            if (_solarRepeatNotes.TryGetValue(solarKey, out string? sNote))
+            {
+                return (sNote, 1);
+            }
+            // Cuối cùng tìm note lặp Âm Lịch
+            if (_lunarRepeatNotes.TryGetValue(lunarKey, out string? lNote))
+            {
+                return (lNote, 2);
+            }
+
+            return ("", 0);
         }
 
         public static void SetNoteForDate(DateTime date, string note, int repeatType, Helpers.LunarInfo lunarInfo)

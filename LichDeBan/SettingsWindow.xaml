@@ -24,6 +24,10 @@
             <TextBlock Text="{Binding Value, ElementName=OpacitySlider, StringFormat={}{0:N1}}" VerticalAlignment="Center" Margin="10,0,0,0"/>
         </StackPanel>
 
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,15">
+            <CheckBox x:Name="StartupCheckBox" Content="Khởi động cùng Windows" VerticalAlignment="Center" />
+        </StackPanel>
+
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Hủy" Click="Cancel_Click" Width="70" Margin="0,0,10,0"/>
             <Button Content="Lưu" Click="Save_Click" Width="70" Background="#28a745" Foreground="White"/>
