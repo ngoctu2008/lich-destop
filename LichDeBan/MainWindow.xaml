@@ -61,7 +61,7 @@
                 <TextBlock Text="T4" TextAlignment="Center" Foreground="White" FontWeight="Bold"/>
                 <TextBlock Text="T5" TextAlignment="Center" Foreground="White" FontWeight="Bold"/>
                 <TextBlock Text="T6" TextAlignment="Center" Foreground="White" FontWeight="Bold"/>
-                <TextBlock Text="T7" TextAlignment="Center" Foreground="#FFCC00" FontWeight="Bold"/>
+                <TextBlock Text="T7" TextAlignment="Center" Foreground="#FF3333" FontWeight="Bold"/>
                 <TextBlock Text="CN" TextAlignment="Center" Foreground="#FF3333" FontWeight="Bold"/>
             </UniformGrid>
 
@@ -80,8 +80,9 @@
                                 <Style TargetType="Border">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsToday}" Value="True">
-                                            <Setter Property="Background" Value="#4400FF00"/>
-                                            <Setter Property="BorderBrush" Value="#8800FF00"/>
+                                            <Setter Property="Background" Value="#550078D7"/>
+                                            <Setter Property="BorderBrush" Value="#AA00A2ED"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
                                             <Setter Property="Opacity" Value="0.4"/>
@@ -107,7 +108,7 @@
                                                 <Setter Property="Foreground" Value="White"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsSaturday}" Value="True">
-                                                        <Setter Property="Foreground" Value="#FFCC00"/>
+                                                        <Setter Property="Foreground" Value="#FF3333"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding IsSunday}" Value="True">
                                                         <Setter Property="Foreground" Value="#FF3333"/>

@@ -43,6 +43,21 @@ namespace LichDeBan
             }
         }
 
+        private void QuickNote_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (Window win in System.Windows.Application.Current.Windows)
+            {
+                if (win is QuickNoteWindow)
+                {
+                    win.Activate();
+                    return;
+                }
+            }
+
+            var quickNoteWindow = new QuickNoteWindow();
+            quickNoteWindow.Show();
+        }
+
         private void Settings_Click(object sender, RoutedEventArgs e)
         {
             // Kiểm tra xem đã mở chưa

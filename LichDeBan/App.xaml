@@ -14,6 +14,7 @@
                 <ContextMenu>
                     <MenuItem Header="Khóa/Mở khóa vị trí" Click="ToggleLock_Click" />
                     <MenuItem Header="Cài đặt" Click="Settings_Click" />
+                    <MenuItem Header="Thêm ghi chú nhanh" Click="QuickNote_Click" />
                     <Separator />
                     <MenuItem Header="Thoát" Click="Exit_Click" />
                 </ContextMenu>

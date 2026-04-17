@@ -68,39 +68,41 @@ namespace LichDeBan
 
         private void MouseHook_OnMouseDoubleClick(object? sender, System.Windows.Point p)
         {
-            Dispatcher.Invoke(() =>
+            // Sử dụng BeginInvoke thay vì Invoke để không block luồng hook (tránh Windows hủy Hook)
+            Dispatcher.BeginInvoke(new Action(() =>
             {
-                // Chuyển đổi từ Physical Pixels sang Device Independent Pixels (DIPs)
-                var source = PresentationSource.FromVisual(this);
-                if (source == null || source.CompositionTarget == null) return;
-
-                System.Windows.Point dipPoint = source.CompositionTarget.TransformFromDevice.Transform(p);
-
-                // Kiểm tra xem chuột có nằm trong cửa sổ không
-                if (dipPoint.X >= this.Left && dipPoint.X <= this.Left + this.Width &&
-                    dipPoint.Y >= this.Top && dipPoint.Y <= this.Top + this.Height)
+                try
                 {
-                    // Lấy vị trí tương đối so với cửa sổ
-                    System.Windows.Point relativePoint = new System.Windows.Point(dipPoint.X - this.Left, dipPoint.Y - this.Top);
+                    // Sử dụng PointFromScreen để hỗ trợ đa màn hình có DPI khác nhau
+                    System.Windows.Point relativePoint = this.PointFromScreen(p);
 
-                    // Thử tìm phần tử UI tại vị trí đó
-                    HitTestResult hitResult = VisualTreeHelper.HitTest(this, relativePoint);
-                    if (hitResult != null)
+                    // Nếu vị trí nằm trong phạm vi hiển thị (kích thước nội tại của cửa sổ từ 0 đến Width/Height)
+                    if (relativePoint.X >= 0 && relativePoint.X <= this.ActualWidth &&
+                        relativePoint.Y >= 0 && relativePoint.Y <= this.ActualHeight)
                     {
-                        // Tìm đối tượng DayCellModel thông qua DataContext của phần tử được nhấp
-                        DependencyObject current = hitResult.VisualHit;
-                        while (current != null && !(current is FrameworkElement fe && fe.DataContext is Models.DayCellModel))
+                        // Thử tìm phần tử UI tại vị trí đó
+                        HitTestResult hitResult = VisualTreeHelper.HitTest(this, relativePoint);
+                        if (hitResult != null)
                         {
-                            current = VisualTreeHelper.GetParent(current);
-                        }
+                            // Tìm đối tượng DayCellModel thông qua DataContext của phần tử được nhấp
+                            DependencyObject current = hitResult.VisualHit;
+                            while (current != null && !(current is FrameworkElement fe && fe.DataContext is Models.DayCellModel))
+                            {
+                                current = VisualTreeHelper.GetParent(current);
+                            }
 
-                        if (current is FrameworkElement element && element.DataContext is Models.DayCellModel cellModel)
-                        {
-                            OpenNoteEditor(cellModel, p);
+                            if (current is FrameworkElement element && element.DataContext is Models.DayCellModel cellModel)
+                            {
+                                OpenNoteEditor(cellModel, p);
+                            }
                         }
                     }
                 }
-            });
+                catch
+                {
+                    // Catch fallback nếu PointFromScreen gặp lỗi
+                }
+            }));
         }
 
         private void OpenNoteEditor(Models.DayCellModel cellModel, System.Windows.Point screenPoint)
