@@ -74,18 +74,25 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="#44FFFFFF" BorderThickness="0.5" Background="Transparent"
-                                Margin="2" CornerRadius="4">
+                        <Border Margin="2" CornerRadius="4">
                             <Border.Style>
                                 <Style TargetType="Border">
+                                    <!-- Cấu hình mặc định cho các ngày thường -->
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" Value="#44FFFFFF"/>
+                                    <Setter Property="BorderThickness" Value="0.5"/>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsToday}" Value="True">
-                                            <Setter Property="Background" Value="#550078D7"/>
-                                            <Setter Property="BorderBrush" Value="#AA00A2ED"/>
-                                            <Setter Property="BorderThickness" Value="2"/>
-                                        </DataTrigger>
+                                        <!-- Những ngày không thuộc tháng này -->
                                         <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
                                             <Setter Property="Opacity" Value="0.4"/>
+                                        </DataTrigger>
+
+                                        <!-- HIỆU ỨNG CHO NGÀY HIỆN TẠI (Ghi đè cấu hình mặc định) -->
+                                        <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                            <Setter Property="Background" Value="#660078D7"/>
+                                            <Setter Property="BorderBrush" Value="#FF00A2ED"/>
+                                            <Setter Property="BorderThickness" Value="2.5"/>
+                                            <Setter Property="Opacity" Value="1.0"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
