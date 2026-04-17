@@ -73,34 +73,50 @@ namespace LichDeBan
             {
                 try
                 {
-                    // Sử dụng PointFromScreen để hỗ trợ đa màn hình có DPI khác nhau
-                    System.Windows.Point relativePoint = this.PointFromScreen(p);
+                    Helpers.Logger.Log($"Mouse double click detected at physical screen: {p.X}, {p.Y}");
 
-                    // Nếu vị trí nằm trong phạm vi hiển thị (kích thước nội tại của cửa sổ từ 0 đến Width/Height)
-                    if (relativePoint.X >= 0 && relativePoint.X <= this.ActualWidth &&
-                        relativePoint.Y >= 0 && relativePoint.Y <= this.ActualHeight)
+                    // Thử phương pháp sử dụng PresentationSource thay vì PointFromScreen do khi cửa sổ ở dưới WorkerW,
+                    // một số hàm WPF có thể bị ngắt quãng.
+                    var source = PresentationSource.FromVisual(this);
+                    if (source == null || source.CompositionTarget == null)
                     {
-                        // Thử tìm phần tử UI tại vị trí đó
-                        HitTestResult hitResult = VisualTreeHelper.HitTest(this, relativePoint);
-                        if (hitResult != null)
-                        {
-                            // Tìm đối tượng DayCellModel thông qua DataContext của phần tử được nhấp
-                            DependencyObject current = hitResult.VisualHit;
-                            while (current != null && !(current is FrameworkElement fe && fe.DataContext is Models.DayCellModel))
-                            {
-                                current = VisualTreeHelper.GetParent(current);
-                            }
+                        Helpers.Logger.Log("PresentationSource is null.");
+                        return;
+                    }
 
-                            if (current is FrameworkElement element && element.DataContext is Models.DayCellModel cellModel)
-                            {
-                                OpenNoteEditor(cellModel, p);
-                            }
+                    System.Windows.Point dipPoint = source.CompositionTarget.TransformFromDevice.Transform(p);
+                    Helpers.Logger.Log($"DIP Point: {dipPoint.X}, {dipPoint.Y}");
+                    Helpers.Logger.Log($"Window Bounds: Left={this.Left}, Top={this.Top}, Width={this.Width}, Height={this.Height}");
+
+                    // Kiểm tra xem chuột có nằm trong cửa sổ không
+                    if (dipPoint.X >= this.Left && dipPoint.X <= this.Left + this.Width &&
+                        dipPoint.Y >= this.Top && dipPoint.Y <= this.Top + this.Height)
+                    {
+                        // Lấy vị trí tương đối so với cửa sổ
+                        System.Windows.Point relativePoint = new System.Windows.Point(dipPoint.X - this.Left, dipPoint.Y - this.Top);
+                        Helpers.Logger.Log($"Relative Point: {relativePoint.X}, {relativePoint.Y}");
+
+                        // Thực hiện HitTest chuyên sâu đi xuyên qua các lớp trong suốt
+                        object? foundModel = Helpers.HitTestHelper.FindDataContextCore(this, relativePoint);
+
+                        if (foundModel is Models.DayCellModel cellModel)
+                        {
+                            Helpers.Logger.Log($"Cell Model matched: {cellModel.Date}");
+                            OpenNoteEditor(cellModel, p);
+                        }
+                        else
+                        {
+                            Helpers.Logger.Log("No DayCellModel DataContext found or hit test failed.");
                         }
                     }
+                    else
+                    {
+                        Helpers.Logger.Log("Click is outside the window bounds.");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Catch fallback nếu PointFromScreen gặp lỗi
+                    Helpers.Logger.Log($"Exception in MouseHook: {ex.Message}");
                 }
             }));
         }

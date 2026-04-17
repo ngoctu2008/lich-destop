@@ -28,7 +28,7 @@
             CornerRadius="8"
             Padding="10">
 
-        <Grid>
+        <Grid Background="Transparent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header -->
                 <RowDefinition Height="Auto"/> <!-- Các ngày trong tuần -->
@@ -98,7 +98,7 @@
                                 </Style>
                             </Border.Style>
 
-                            <Grid Margin="5">
+                            <Grid Margin="5" Background="Transparent">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
