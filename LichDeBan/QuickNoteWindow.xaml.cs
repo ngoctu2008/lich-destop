@@ -12,6 +12,26 @@ namespace LichDeBan
         {
             InitializeComponent();
             NoteDatePicker.SelectedDate = DateTime.Today;
+            NoteDatePicker.SelectedDateChanged += NoteDatePicker_SelectedDateChanged;
+            LoadNoteForSelectedDate();
+        }
+
+        private void NoteDatePicker_SelectedDateChanged(object? sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            LoadNoteForSelectedDate();
+        }
+
+        private void LoadNoteForSelectedDate()
+        {
+            if (NoteDatePicker.SelectedDate.HasValue)
+            {
+                DateTime date = NoteDatePicker.SelectedDate.Value;
+                LunarInfo lunarInfo = LunarCalendarHelper.GetLunarInfo(date);
+
+                var (note, repeatType) = StorageManager.GetRawNoteForDate(date, lunarInfo);
+                NoteTextBox.Text = note;
+                RepeatCombo.SelectedIndex = repeatType;
+            }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)

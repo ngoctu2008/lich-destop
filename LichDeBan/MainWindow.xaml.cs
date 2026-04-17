@@ -68,55 +68,62 @@ namespace LichDeBan
 
         private void MouseHook_OnMouseDoubleClick(object? sender, System.Windows.Point p)
         {
-            // Sử dụng BeginInvoke thay vì Invoke để không block luồng hook (tránh Windows hủy Hook)
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 try
                 {
-                    Helpers.Logger.Log($"Mouse double click detected at physical screen: {p.X}, {p.Y}");
+                    Helpers.Logger.Log($"Mouse DblClick: X={p.X}, Y={p.Y}");
 
-                    // Thử phương pháp sử dụng PresentationSource thay vì PointFromScreen do khi cửa sổ ở dưới WorkerW,
-                    // một số hàm WPF có thể bị ngắt quãng.
-                    var source = PresentationSource.FromVisual(this);
-                    if (source == null || source.CompositionTarget == null)
+                    // Lấy tọa độ thật của cửa sổ từ Win32 API (vì WPF Left/Top có thể sai khi ở WorkerW)
+                    if (Helpers.WindowBoundsHelper.GetWindowRect(_windowHandle, out Helpers.WindowBoundsHelper.RECT rect))
                     {
-                        Helpers.Logger.Log("PresentationSource is null.");
-                        return;
-                    }
+                        Helpers.Logger.Log($"Win32 Bounds: L={rect.Left}, T={rect.Top}, R={rect.Right}, B={rect.Bottom}");
 
-                    System.Windows.Point dipPoint = source.CompositionTarget.TransformFromDevice.Transform(p);
-                    Helpers.Logger.Log($"DIP Point: {dipPoint.X}, {dipPoint.Y}");
-                    Helpers.Logger.Log($"Window Bounds: Left={this.Left}, Top={this.Top}, Width={this.Width}, Height={this.Height}");
-
-                    // Kiểm tra xem chuột có nằm trong cửa sổ không
-                    if (dipPoint.X >= this.Left && dipPoint.X <= this.Left + this.Width &&
-                        dipPoint.Y >= this.Top && dipPoint.Y <= this.Top + this.Height)
-                    {
-                        // Lấy vị trí tương đối so với cửa sổ
-                        System.Windows.Point relativePoint = new System.Windows.Point(dipPoint.X - this.Left, dipPoint.Y - this.Top);
-                        Helpers.Logger.Log($"Relative Point: {relativePoint.X}, {relativePoint.Y}");
-
-                        // Thực hiện HitTest chuyên sâu đi xuyên qua các lớp trong suốt
-                        object? foundModel = Helpers.HitTestHelper.FindDataContextCore(this, relativePoint);
-
-                        if (foundModel is Models.DayCellModel cellModel)
+                        // Kiểm tra chuột có nằm trong cửa sổ vật lý không
+                        if (p.X >= rect.Left && p.X <= rect.Right && p.Y >= rect.Top && p.Y <= rect.Bottom)
                         {
-                            Helpers.Logger.Log($"Cell Model matched: {cellModel.Date}");
-                            OpenNoteEditor(cellModel, p);
+                            // Tọa độ tương đối bằng pixel vật lý
+                            double relativePhysicalX = p.X - rect.Left;
+                            double relativePhysicalY = p.Y - rect.Top;
+
+                            // Lấy DPI hiện tại
+                            var dpiInfo = VisualTreeHelper.GetDpi(this);
+                            double dpiScaleX = dpiInfo.DpiScaleX;
+                            double dpiScaleY = dpiInfo.DpiScaleY;
+
+                            // Chuyển sang DIPs
+                            double relativeDipX = relativePhysicalX / dpiScaleX;
+                            double relativeDipY = relativePhysicalY / dpiScaleY;
+
+                            System.Windows.Point relativePoint = new System.Windows.Point(relativeDipX, relativeDipY);
+                            Helpers.Logger.Log($"DIP Relative Point: {relativePoint.X}, {relativePoint.Y}");
+
+                            // Tìm kiếm Control tại điểm tương đối này
+                            object? foundModel = Helpers.HitTestHelper.FindDataContextCore(this, relativePoint);
+
+                            if (foundModel is Models.DayCellModel cellModel)
+                            {
+                                Helpers.Logger.Log($"Hit success: {cellModel.Date}");
+                                OpenNoteEditor(cellModel, p);
+                            }
+                            else
+                            {
+                                Helpers.Logger.Log("HitTest failed to find DayCellModel.");
+                            }
                         }
                         else
                         {
-                            Helpers.Logger.Log("No DayCellModel DataContext found or hit test failed.");
+                            Helpers.Logger.Log("Click outside Win32 bounds.");
                         }
                     }
                     else
                     {
-                        Helpers.Logger.Log("Click is outside the window bounds.");
+                        Helpers.Logger.Log("GetWindowRect failed.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Helpers.Logger.Log($"Exception in MouseHook: {ex.Message}");
+                    Helpers.Logger.Log($"Exception: {ex.Message}");
                 }
             }));
         }
