@@ -146,6 +146,8 @@ namespace LichDeBan
             editor.Left = screenPoint.X;
             editor.Top = screenPoint.Y;
 
+            // Kích hoạt cửa sổ lên trên cùng để tránh bị WorkerW che mất (gây lỗi tiếng Ding)
+            editor.Activate();
             editor.ShowDialog();
 
             if (editor.IsSaved)

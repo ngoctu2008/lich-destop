@@ -1,7 +1,7 @@
 <Window x:Class="LichDeBan.QuickNoteWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Thêm ghi chú nhanh" Height="300" Width="400" WindowStartupLocation="CenterScreen">
+        Title="Thêm ghi chú nhanh" Height="300" Width="400" WindowStartupLocation="CenterScreen" Topmost="True">
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
